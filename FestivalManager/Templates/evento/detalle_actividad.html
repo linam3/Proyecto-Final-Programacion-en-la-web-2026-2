@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block titulo %}{{ actividad.nombre }} · UFEST{% endblock %}
+
+{% block tema %}
+<style>
+  :root { --azul: {{ actividad.evento.color_primario }}; --verde: {{ actividad.evento.color_acento }}; }
+</style>
+{% endblock %}
+
+{% block contenido %}
+<p class="migas">
+  <a href="{% url 'evento:lista' %}">Eventos</a> &rsaquo;
+  <a href="{% url 'evento:detalle' actividad.evento.pk %}">{{ actividad.evento.nombre }}</a> &rsaquo;
+  {{ actividad.nombre }}
+</p>
+
+<section class="evento">
+  <div class="imagen-evento">
+    {% if actividad.imagen %}
+      <img src="{{ actividad.imagen.url }}" alt="{{ actividad.nombre }}">
+    {% else %}
+      Imagen de la actividad
+    {% endif %}
+  </div>
+  <div class="info">
+    <a href="{% url 'evento:detalle' actividad.evento.pk %}" class="etiqueta-evento">
+      Actividad de: {{ actividad.evento.nombre }}
+    </a>
+    <h2>{{ actividad.nombre }}</h2>
+    <p><strong>Fecha:</strong> {{ actividad.fecha_inicio|date:"j M Y · g:i a" }}</p>
+    <p><strong>Lugar:</strong> {{ actividad.lugar }}</p>
+    <p><strong>Cupo:</strong> {{ actividad.inscritos }} / {{ actividad.cupo }} inscritos</p>
+    <p><strong>Categoría:</strong> {{ actividad.categoria|default:"Sin categoría" }}</p>
+    <div class="equivalencia">
+      <small>Equivalencia de la actividad</small>
+      <span class="puntos">+{{ actividad.puntos }} puntos</span>
+      <em>si asistes</em>
+    </div>
+
+    <div class="acciones">
+      {% if participacion %}
+        {% if participacion.estado == "no_asistio" %}
+          <p class="ayuda">Quedaste registrado como «No asistió» en esta actividad.</p>
+        {% else %}
+          <a class="btn btn-primario" href="{% url 'evento:entrada' actividad.pk %}">Ver mi entrada</a>
+        {% endif %}
+        {% if participacion.estado == "inscrito" %}
+          <form method="post" action="{% url 'evento:cancelar' actividad.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-secundario">Cancelar inscripción</button>
+          </form>
+        {% endif %}
+      {% elif user.is_authenticated and not user.es_participante %}
+        <p class="ayuda">Los coordinadores y administradores no se inscriben en actividades.</p>
+      {% elif actividad.estado != "publicado" %}
+        <p class="ayuda">Las inscripciones para esta actividad están cerradas.</p>
+      {% elif actividad.inscritos >= actividad.cupo %}
+        <p class="ayuda">Esta actividad ya no tiene cupos disponibles.</p>
+      {% elif user.is_authenticated %}
+        <form method="post" action="{% url 'evento:inscribirse' actividad.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-primario">Inscribirme</button>
+        </form>
+      {% else %}
+        <a class="btn btn-primario" href="{% url 'login' %}?next={{ request.path }}">Inicia sesión para inscribirte</a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<section class="descripcion">
+  <h3>Descripción</h3>
+  {{ actividad.descripcion|linebreaks }}
+</section>
+
+{% if otras %}
+<section class="otras">
+  <h3>Otras actividades de {{ actividad.evento.nombre }}</h3>
+  <ul class="lista-convenciones">
+    {% for o in otras %}
+      <li>
+        <a href="{% url 'evento:actividad' o.pk %}">{{ o.nombre }}</a>
+        <span>{{ o.categoria|default:"Sin categoría" }} · +{{ o.puntos }} puntos</span>
+      </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+<p class="nota">Nota: si te inscribes y no asistes, no se te otorgan los puntos de la actividad.</p>
+{% endblock %}

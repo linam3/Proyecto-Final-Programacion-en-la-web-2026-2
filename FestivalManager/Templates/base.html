@@ -1,0 +1,41 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}UFEST{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  {% block tema %}{% endblock %}
+</head>
+<body>
+  <header class="navbar">
+    <h1>UFEST</h1>
+    <nav>
+      <a href="{% url 'evento:lista' %}">Eventos</a>
+      {% if user.is_authenticated %}
+        {% if user.rol == "coordinador" or user.rol == "admin" %}
+          <a href="{% url 'evento:panel' %}">Panel</a>
+        {% endif %}
+        {%if user.is_authenticated and user.es_participante%}
+          <a href="{% url 'perfil' %}">Mi perfil</a>
+        {%endif%}
+        <form method="post" action="{% url 'logout' %}" class="form-salir">
+          {% csrf_token %}
+          <button type="submit">Salir</button>
+        </form>
+      {% else %}
+        <a href="{% url 'login' %}">Iniciar sesión</a>
+        <a href="{% url 'registro' %}">Registrarse</a>
+      {% endif %}
+    </nav>
+  </header>
+
+  <main>
+    {% for m in messages %}
+      <p class="mensaje {{ m.tags }}">{{ m }}</p>
+    {% endfor %}
+    {% block contenido %}{% endblock %}
+  </main>
+</body>
+</html>

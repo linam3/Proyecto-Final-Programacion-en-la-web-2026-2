@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block titulo %}Apariencia · {{ evento.nombre }} · UFEST{% endblock %}
+
+{% block tema %}
+<style>
+  :root { --azul: {{ evento.color_primario }}; --verde: {{ evento.color_acento }}; }
+</style>
+{% endblock %}
+
+{% block contenido %}
+<p class="migas"><a href="{% url 'evento:panel' %}">Panel</a> &rsaquo; {{ evento.nombre }} &rsaquo; Apariencia</p>
+
+<h2>Apariencia de {{ evento.nombre }}</h2>
+<p class="ayuda">
+  Estos colores se aplican a la página del evento y de todas sus actividades.
+  La vista previa cambia mientras eliges.
+</p>
+
+<form method="post" class="formulario formulario-linea">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit" class="btn btn-primario">Guardar colores</button>
+</form>
+
+<div class="vista-previa">
+  <div class="vista-previa-barra">UFEST</div>
+  <div class="vista-previa-cuerpo">
+    <h3>{{ evento.nombre }}</h3>
+    <div class="equivalencia">
+      <small>Equivalencia de la actividad</small>
+      <span class="puntos">+20 puntos</span>
+    </div>
+    <span class="btn btn-primario">Inscribirme</span>
+  </div>
+</div>
+
+<script>
+  // Vista previa en vivo: cambia las variables de color al mover el selector
+  const raiz = document.documentElement;
+  document.getElementById("id_color_primario").addEventListener("input", e => {
+    raiz.style.setProperty("--azul", e.target.value);
+  });
+  document.getElementById("id_color_acento").addEventListener("input", e => {
+    raiz.style.setProperty("--verde", e.target.value);
+  });
+</script>
+{% endblock %}

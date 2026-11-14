@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block titulo %}Panel · UFEST{% endblock %}
+
+{% block contenido %}
+<h2>Panel de {{ user.get_rol_display|lower }}</h2>
+
+{% for evento in eventos %}
+  <section class="panel-evento">
+    <h3>{{ evento.nombre }} <small>· {{ evento.get_estado_display }}</small></h3>
+    <p>{{ evento.fecha_inicio|date:"j M" }} – {{ evento.fecha_fin|date:"j M Y" }} · {{ evento.sede }}</p>
+
+    {% if evento.estado != "cancelado" %}
+      <a class="btn btn-primario boton-nuevo" href="{% url 'evento:crear_actividad' evento.pk %}">+ Nueva actividad</a>
+            <a class="btn btn-secundario boton-nuevo" href="{% url 'evento:apariencia_evento' evento.pk %}">Apariencia</a>
+    {% endif %}
+
+    <table class="tabla">
+      <thead>
+        <tr><th>Actividad</th><th>Fecha</th><th>Estado</th><th>Inscritos</th><th>Acciones</th></tr>
+      </thead>
+      <tbody>
+        {% for a in evento.actividades.all %}
+          <tr>
+            <td>{{ a.nombre }}</td>
+            <td>{{ a.fecha_inicio|date:"j M, g:i a" }}</td>
+            <td>{{ a.get_estado_display }}</td>
+            <td>{{ a.inscritos }} / {{ a.cupo }}</td>
+            <td class="acciones-panel">
+              <a href="{% url 'evento:asistencia' a.pk %}">Asistencia</a>
+              {% if a.estado != "cancelado" %}
+                <a href="{% url 'evento:editar_actividad' a.pk %}">Editar</a>
+                <form method="post" action="{% url 'evento:cancelar_actividad' a.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="enlace-peligro">Cancelar</button>
+                </form>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5">Este evento todavía no tiene actividades.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+{% empty %}
+  <p>No tienes eventos asignados todavía.</p>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block titulo %}Mi entrada · {{ actividad.nombre }} · UFEST{% endblock %}
+
+{% block tema %}
+<style>
+  :root { --azul: {{ actividad.evento.color_primario }}; --verde: {{ actividad.evento.color_acento }}; }
+</style>
+{% endblock %}
+
+{% block contenido %}
+<p class="migas">
+  <a href="{% url 'evento:actividad' actividad.pk %}">{{ actividad.nombre }}</a> &rsaquo; Mi entrada
+</p>
+
+<div class="entrada">
+  <h2>{{ actividad.nombre }}</h2>
+  <p>{{ actividad.evento.nombre }}</p>
+  <p><strong>{{ actividad.fecha_inicio|date:"j M Y · g:i a" }}</strong> · {{ actividad.lugar }}</p>
+
+  <div class="qr">{{ qr_svg|safe }}</div>
+
+  <p class="entrada-nombre">{{ user.get_full_name|default:user.username }}</p>
+  <p>Código: {{ user.codigo }}</p>
+
+  {% if participacion.estado == "asistio" %}
+    <p class="mensaje success">Asistencia registrada · +{{ participacion.puntos_otorgados }} puntos</p>
+  {% else %}
+    <p class="ayuda">Muestra este código al coordinador en la entrada de la actividad.</p>
+  {% endif %}
+</div>
+{% endblock %}

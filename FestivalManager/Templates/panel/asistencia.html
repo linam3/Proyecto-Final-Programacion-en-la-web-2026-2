@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block titulo %}Asistencia · {{ actividad.nombre }} · UFEST{% endblock %}
+
+{% block tema %}
+<style>
+  :root { --azul: {{ actividad.evento.color_primario }}; --verde: {{ actividad.evento.color_acento }}; }
+</style>
+{% endblock %}
+
+{% block contenido %}
+<p class="migas">
+  <a href="{% url 'evento:panel' %}">Panel</a> &rsaquo;
+  {{ actividad.evento.nombre }} &rsaquo;
+  {{ actividad.nombre }}
+</p>
+
+<h2>Asistencia: {{ actividad.nombre }}</h2>
+{% if actividad.estado != "cancelado" %}
+  <a class="btn btn-primario boton-nuevo" href="{% url 'evento:escanear' actividad.pk %}">Escanear entradas (QR)</a>
+{% endif %}
+<p>
+  {{ actividad.fecha_inicio|date:"j M Y · g:i a" }} · {{ actividad.lugar }} ·
+  {{ actividad.inscritos }} / {{ actividad.cupo }} inscritos ·
+  <span class="puntos">+{{ actividad.puntos }} puntos</span>
+</p>
+
+{% if actividad.estado == "cancelado" %}
+  <p class="mensaje error">Esta actividad está cancelada. No se puede modificar la asistencia.</p>
+{% endif %}
+
+<section>
+  <h3>Inscritos ({{ participaciones|length }})</h3>
+  <table class="tabla">
+    <thead>
+      <tr><th>Código</th><th>Nombre</th><th>Estado</th><th>Puntos</th><th>Registrar</th></tr>
+    </thead>
+    <tbody>
+      {% for p in participaciones %}
+        <tr>
+          <td>{{ p.usuario.codigo }}</td>
+          <td>{{ p.usuario.get_full_name|default:p.usuario.username }}</td>
+          <td>
+            {{ p.get_estado_display }}
+            {% if p.metodo_registro %}<small>({{ p.get_metodo_registro_display }})</small>{% endif %}
+          </td>
+          <td>{{ p.puntos_otorgados }}</td>
+          <td>
+            <form method="post" action="{% url 'evento:marcar' actividad.pk p.pk %}" class="botones-asistencia">
+              {% csrf_token %}
+              <button class="btn btn-primario" name="asistio" value="1"
+                      {% if p.estado == "asistio" %}disabled{% endif %}>Asistió</button>
+              <button class="btn btn-secundario" name="asistio" value="0"
+                      {% if p.estado == "no_asistio" %}disabled{% endif %}>No asistió</button>
+            </form>
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="5">Nadie se ha inscrito todavía.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h3>Registro manual de asistentes</h3>
+  <p class="ayuda">
+    Para quien asistió sin inscribirse o sin su entrada. Si el código coincide con
+    un usuario registrado, recibe los puntos automáticamente.
+  </p>
+  <form method="post" action="{% url 'evento:agregar_asistente' actividad.pk %}" class="formulario formulario-linea">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn btn-primario">Agregar asistente</button>
+  </form>
+
+  {% if asistentes %}
+    <table class="tabla">
+      <thead>
+        <tr><th>Código</th><th>Nombres</th><th>Apellidos</th><th>Cuenta</th><th>Registrado</th></tr>
+      </thead>
+      <tbody>
+        {% for a in asistentes %}
+          <tr>
+            <td>{{ a.codigo }}</td>
+            <td>{{ a.nombres }}</td>
+            <td>{{ a.apellidos }}</td>
+            <td>{% if a.usuario %}Vinculada{% else %}Sin cuenta{% endif %}</td>
+            <td>{{ a.fecha_registro|date:"j M, g:i a" }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+</section>
+
+<section>
+  <h3>Cerrar asistencia</h3>
+  <p class="ayuda">
+    Quedan {{ pendientes }} inscrito(s) sin registrar. Al cerrar, pasan a
+    «No asistió» y no reciben los puntos.
+  </p>
+  <form method="post" action="{% url 'evento:cerrar_asistencia' actividad.pk %}">
+    {% csrf_token %}
+    <button class="btn btn-secundario" {% if not pendientes %}disabled{% endif %}>Cerrar asistencia</button>
+  </form>
+</section>
+{% endblock %}

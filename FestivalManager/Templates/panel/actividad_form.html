@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block titulo %}{{ titulo }} · UFEST{% endblock %}
+
+{% block tema %}
+<style>
+  :root { --azul: {{ evento.color_primario }}; --verde: {{ evento.color_acento }}; }
+</style>
+{% endblock %}
+
+{% block contenido %}
+<p class="migas">
+  <a href="{% url 'evento:panel' %}">Panel</a> &rsaquo;
+  {{ evento.nombre }} &rsaquo;
+  {{ titulo }}
+</p>
+
+<h2>{{ titulo }}</h2>
+<p class="ayuda">
+  Evento: {{ evento.nombre }} ({{ evento.fecha_inicio|date:"j M" }} – {{ evento.fecha_fin|date:"j M Y" }}).
+  Las fechas de la actividad deben quedar dentro de ese rango.
+</p>
+
+<form method="post" enctype="multipart/form-data" class="formulario">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit" class="btn btn-primario">Guardar</button>
+</form>
+
+<p><a href="{% url 'evento:panel' %}">Volver al panel</a></p>
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block titulo %}Escanear · {{ actividad.nombre }} · UFEST{% endblock %}
+
+{% block tema %}
+<style>
+  :root { --azul: {{ actividad.evento.color_primario }}; --verde: {{ actividad.evento.color_acento }}; }
+</style>
+{% endblock %}
+
+{% block contenido %}
+<p class="migas">
+  <a href="{% url 'evento:panel' %}">Panel</a> &rsaquo;
+  <a href="{% url 'evento:asistencia' actividad.pk %}">{{ actividad.nombre }}</a> &rsaquo;
+  Escanear
+</p>
+
+<h2>Escanear entradas: {{ actividad.nombre }}</h2>
+
+{% csrf_token %}
+<div id="lector" class="lector-qr"></div>
+<p id="resultado" class="resultado-qr">Apunta la cámara al código QR de la entrada.</p>
+
+<details class="entrada-manual">
+  <summary>Escribir el código a mano</summary>
+  <form id="form-manual" class="formulario formulario-linea">
+    <p><input id="token-manual" placeholder="Pega aquí el código de la entrada"></p>
+    <button class="btn btn-secundario">Registrar</button>
+  </form>
+</details>
+
+<p><a href="{% url 'evento:asistencia' actividad.pk %}">Volver a la lista de asistencia</a></p>
+
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script>
+  const URL_REGISTRO = "{% url 'evento:registrar_qr' actividad.pk %}";
+  const csrf = document.querySelector("[name=csrfmiddlewaretoken]").value;
+  const resultado = document.getElementById("resultado");
+  let ocupado = false, ultimoTexto = null, ultimoMomento = 0;
+
+  function mostrar(tipo, texto) {
+    resultado.className = "resultado-qr " + tipo;
+    resultado.textContent = texto;
+  }
+
+  async function enviar(token) {
+    ocupado = true;
+    const datos = new FormData();
+    datos.append("token", token);
+    try {
+      const respuesta = await fetch(URL_REGISTRO, {
+        method: "POST",
+        headers: { "X-CSRFToken": csrf },
+        body: datos,
+      });
+      const json = await respuesta.json();
+      mostrar(json.ok ? (json.repetido ? "aviso" : "ok") : "error", json.mensaje);
+    } catch (e) {
+      mostrar("error", "No se pudo conectar con el servidor.");
+    } finally {
+      ocupado = false;
+    }
+  }
+
+  // La cámara lee el mismo QR muchas veces por segundo: ignora repeticiones durante 3 s
+  function alLeer(texto) {
+    const ahora = Date.now();
+    if (ocupado || (texto === ultimoTexto && ahora - ultimoMomento < 3000)) return;
+    ultimoTexto = texto;
+    ultimoMomento = ahora;
+    enviar(texto);
+  }
+
+  new Html5QrcodeScanner("lector", { fps: 10, qrbox: 250 }, false).render(alLeer, () => {});
+
+  document.getElementById("form-manual").addEventListener("submit", e => {
+    e.preventDefault();
+    const token = document.getElementById("token-manual").value.trim();
+    if (token) enviar(token);
+  });
+</script>
+{% endblock %}
