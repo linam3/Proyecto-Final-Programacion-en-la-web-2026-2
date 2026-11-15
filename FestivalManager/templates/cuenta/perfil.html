@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block titulo %}Mis puntos · {{ sitio.nombre }}{% endblock %}
+
+{% block contenido %}
+<h2>{{ user.get_full_name|default:user.username }}</h2>
+<p>Código: {{ user.codigo }} · Correo: {{ user.email|default:"—" }} · Teléfono: {{ user.telefono|default:"—" }}</p>
+{% if user.es_participante %}
+  {% if user.verificado %}
+    <p class="mensaje success">Cuenta verificada</p>
+  {% else %}
+    <p class="mensaje info">Cuenta pendiente de verificación: un administrador comprobará tus datos antes de que puedas inscribirte.</p>
+  {% endif %}
+{% endif %}
+<p><a href="{% url 'editar_perfil' %}">Editar correo y teléfono</a> ·
+   <a href="{% url 'password_change' %}">Cambiar contraseña</a></p>
+
+<div class="equivalencia">
+  <small>Total de puntos</small>
+  <span class="puntos">{{ user.puntos }} puntos</span>
+</div>
+
+<h3>Historial de participación</h3>
+{% regroup participaciones by actividad.evento as grupos %}
+{% for grupo in grupos %}
+  <h4>{{ grupo.grouper.nombre }}{% if grupo.grouper.estado == "cancelado" %} <small>· Evento cancelado</small>{% endif %}</h4>
+  <table class="tabla">
+    <thead>
+      <tr><th>Actividad</th><th>Fecha</th><th>Estado</th><th>Puntos</th></tr>
+    </thead>
+    <tbody>
+      {% for p in grupo.list %}
+        <tr>
+          {% if p.actividad.estado == "cancelado" %}
+            <td>{{ p.actividad.nombre }}</td>
+            <td>{{ p.actividad.fecha_inicio|date:"j M Y, g:i a" }}</td>
+            <td>Actividad cancelada</td>
+            <td>0</td>
+          {% else %}
+            <td><a href="{% url 'evento:actividad' p.actividad.pk %}">{{ p.actividad.nombre }}</a></td>
+            <td>{{ p.actividad.fecha_inicio|date:"j M Y, g:i a" }}</td>
+            <td>{{ p.get_estado_display }}</td>
+            <td>{{ p.puntos_otorgados }}</td>
+          {% endif %}
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% empty %}
+  <p>Aún no te has inscrito en ninguna actividad.</p>
+{% endfor %}
+{% endblock %}

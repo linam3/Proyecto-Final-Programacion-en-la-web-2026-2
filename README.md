@@ -1,0 +1,7 @@
+# UFEST Puntos — FestivalManager
+
+En la rama main se consolida el proyecto. Se agrega el rol de administrador general, quien se encarga de crear, editar y cancelar los eventos, asignarles coordinadores, consultar reportes de participación y cambiar la apariencia del sitio (nombre, logo, portada y colores). Los coordinadores siguen manejando las actividades de sus eventos, como publicarlas y definir horarios, lugar, descripción y foto de portada, y ahora también pueden iniciarlas y finalizarlas o dejar que cambien de estado solas según la hora.
+
+La asistencia se toma ahora mediante un QR por actividad, que solo ven y descargan el administrador y los coordinadores. El participante lo escanea con su celular y, si está inscrito y la actividad está en curso, recibe sus puntos. Quien no lo escanea queda como «No asistió». Si un evento se cancela, sus actividades se cancelan, no se puede inscribir nadie y los puntos de ese evento dejan de contar, aunque el evento permanece en el historial de cada usuario.
+
+Los participantes se registran con nombres, apellidos, correo y teléfono. Un administrador verifica sus datos antes de que puedan inscribirse, y ellos solo pueden editar su correo, su teléfono y su contraseña. También se agregan filtros por fecha en la lista de eventos y en sus actividades, y reportes de participación descargables en CSV.

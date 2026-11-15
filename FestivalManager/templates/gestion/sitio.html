@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block titulo %}Apariencia del sitio · {{ sitio.nombre }}{% endblock %}
+
+{% block contenido %}
+<p class="migas"><a href="{% url 'evento:gestion' %}">Administración</a> &rsaquo; Apariencia del sitio</p>
+<h2>Apariencia del sitio</h2>
+<p class="ayuda">
+  Cambia el nombre, el logo, el título de la página principal y los colores de todo el sitio.
+  Cada evento conserva sus propios colores en sus páginas. La vista previa cambia mientras eliges.
+</p>
+
+<form method="post" enctype="multipart/form-data" class="formulario">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit" class="btn btn-primario">Guardar</button>
+</form>
+
+<div class="vista-previa">
+  <div class="vista-previa-barra" id="prev-barra">{{ sitio.nombre }}</div>
+  <div class="vista-previa-cuerpo">
+    <h3 id="prev-titulo">{{ sitio.titulo_portada }}</h3>
+    <div class="equivalencia">
+      <small>Equivalencia de la actividad</small>
+      <span class="puntos">+20 puntos</span>
+    </div>
+    <span class="btn btn-primario">Inscribirme</span>
+  </div>
+</div>
+
+<script>
+  const raiz = document.documentElement;
+  const campo = id => document.getElementById(id);
+  campo("id_color_primario").addEventListener("input", e => raiz.style.setProperty("--azul", e.target.value));
+  campo("id_color_acento").addEventListener("input", e => raiz.style.setProperty("--verde", e.target.value));
+  campo("id_nombre").addEventListener("input", e => campo("prev-barra").textContent = e.target.value);
+  campo("id_titulo_portada").addEventListener("input", e => campo("prev-titulo").textContent = e.target.value);
+</script>
+{% endblock %}

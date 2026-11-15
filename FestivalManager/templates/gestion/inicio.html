@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block titulo %}Administración · {{ sitio.nombre }}{% endblock %}
+
+{% block contenido %}
+<h2>Panel del administrador general</h2>
+<p class="ayuda">
+  Aquí creas los eventos y asignas sus coordinadores. Los usuarios, roles y ajustes de puntos
+  se gestionan en el <a href="{% url 'admin:index' %}">admin de Django</a>.
+</p>
+
+<a class="btn btn-primario boton-nuevo" href="{% url 'evento:evento_nuevo' %}">+ Nuevo evento</a>
+<a class="btn btn-secundario boton-nuevo" href="{% url 'evento:sitio_config' %}">Apariencia del sitio</a>
+
+<table class="tabla">
+  <thead>
+    <tr>
+      <th>Evento</th><th>Fechas</th><th>Estado</th><th>Coordinadores</th>
+      <th>Actividades</th><th>Inscritos</th><th>Asistentes</th><th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for e in eventos %}
+      <tr>
+        <td>{{ e.nombre }}</td>
+        <td>{{ e.fecha_inicio|date:"j M" }} – {{ e.fecha_fin|date:"j M Y" }}</td>
+        <td>{{ e.get_estado_display }}</td>
+        <td>{% for u in e.coordinadores.all %}{{ u.username }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</td>
+        <td>{{ e.num_actividades }}</td>
+        <td>{{ e.num_inscritos }}</td>
+        <td>{{ e.num_asistentes }}</td>
+        <td class="acciones-panel">
+          <a href="{% url 'evento:reporte' e.pk %}">Reporte</a>
+          {% if e.estado != "cancelado" %}
+            <a href="{% url 'evento:evento_editar' e.pk %}">Editar</a>
+            <a class="enlace-peligro" href="{% url 'evento:evento_cancelar' e.pk %}">Cancelar</a>
+          {% endif %}
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="8">Todavía no hay eventos.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

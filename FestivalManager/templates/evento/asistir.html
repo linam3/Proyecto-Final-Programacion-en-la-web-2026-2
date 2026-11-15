@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block titulo %}Registrar asistencia · {{ sitio.nombre }}{% endblock %}
+
+{% block tema %}
+<style>
+  :root { --azul: {{ actividad.evento.color_primario }}; --verde: {{ actividad.evento.color_acento }}; }
+</style>
+{% endblock %}
+
+{% block contenido %}
+<h2>{{ actividad.nombre }}</h2>
+<p>{{ actividad.evento.nombre }} · {{ actividad.lugar }}</p>
+
+{% if confirmar %}
+  <p>¿Confirmas que estás en la actividad para registrar tu asistencia?</p>
+  <form method="post" action="">
+    {% csrf_token %}
+    <button type="submit" class="boton">Confirmar asistencia</button>
+  </form>
+{% else %}
+  <p class="mensaje {{ resultado.tipo }}">{{ resultado.mensaje }}</p>
+{% endif %}
+
+{% if actividad.estado != "cancelado" and actividad.evento.estado != "cancelado" %}
+  <p><a href="{% url 'evento:actividad' actividad.pk %}">Ver la actividad</a></p>
+{% endif %}
+<p><a href="{% url 'perfil' %}">Ir a mi perfil</a></p>
+{% endblock %}

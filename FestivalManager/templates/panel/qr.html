@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block titulo %}QR · {{ actividad.nombre }} · {{ sitio.nombre }}{% endblock %}
+
+{% block tema %}
+<style>
+  :root { --azul: {{ actividad.evento.color_primario }}; --verde: {{ actividad.evento.color_acento }}; }
+  .qr-actividad { max-width: 360px; margin: 1rem auto; text-align: center; }
+  .qr-actividad svg { width: 100%; height: auto; }
+</style>
+{% endblock %}
+
+{% block contenido %}
+<p class="migas">
+  <a href="{% url 'evento:panel' %}">Panel</a> &rsaquo;
+  <a href="{% url 'evento:asistencia' actividad.pk %}">{{ actividad.nombre }}</a> &rsaquo; QR
+</p>
+<h2>QR de asistencia: {{ actividad.nombre }}</h2>
+<p class="ayuda">
+  Descárgalo y muéstralo en el lugar de la actividad. Cada participante inscrito lo escanea con su celular
+  mientras la actividad está <strong>en curso</strong> y así registra su asistencia y gana sus puntos.
+  Los participantes no pueden ver este código en la página: solo lo ven administradores y coordinadores del evento.
+</p>
+<p>Estado actual: <strong>{{ actividad.get_estado_display }}</strong>
+  {% if actividad.estado == "publicado" %}· empezará a aceptar escaneos cuando inicie (a su hora, o con el botón «Iniciar» del panel).{% endif %}
+  {% if actividad.estado == "finalizado" %}· ya terminó, los escaneos se rechazan.{% endif %}
+</p>
+<div class="qr-actividad">
+  {{ qr_svg|safe }}
+  <p class="ayuda">{{ url }}</p>
+  <a class="btn btn-primario" href="{% url 'evento:qr_descargar' actividad.pk %}">Descargar QR (PNG)</a>
+</div>
+{% endblock %}

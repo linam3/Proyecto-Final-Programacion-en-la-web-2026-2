@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block titulo %}Editar perfil · {{ sitio.nombre }}{% endblock %}
+
+{% block contenido %}
+<p class="migas"><a href="{% url 'perfil' %}">Mi perfil</a> &rsaquo; Editar</p>
+<h2>Editar datos de contacto</h2>
+<p class="ayuda">
+  Código: <strong>{{ user.codigo }}</strong> · Nombre: <strong>{{ user.get_full_name }}</strong><br>
+  Estos datos los verifica un administrador y no se pueden cambiar aquí. Si tienen un error, pídele a un administrador que los corrija.
+</p>
+<form method="post" class="formulario">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit" class="btn btn-primario">Guardar</button>
+</form>
+{% endblock %}

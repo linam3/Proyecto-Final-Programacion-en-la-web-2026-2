@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block titulo %}Cancelar evento · {{ sitio.nombre }}{% endblock %}
+
+{% block contenido %}
+<p class="migas"><a href="{% url 'evento:gestion' %}">Administración</a> &rsaquo; Cancelar evento</p>
+<h2>¿Cancelar «{{ evento.nombre }}»?</h2>
+<p class="mensaje error">Esta acción no se puede deshacer.</p>
+<ul>
+  <li>Se cancelan sus <strong>{{ num_actividades }}</strong> actividad(es) activas.</li>
+  <li>Nadie podrá inscribirse ni registrar asistencia.</li>
+  <li>Los <strong>{{ num_inscritos }}</strong> inscritos conservan el evento en su historial, pero marcado como cancelado.</li>
+  <li>Los puntos de este evento ({{ puntos }} otorgados a {{ num_asistentes }} asistente(s)) dejan de contar en el saldo de cada usuario.</li>
+</ul>
+<form method="post" class="acciones-panel">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-primario">Sí, cancelar el evento</button>
+  <a class="btn btn-secundario" href="{% url 'evento:gestion' %}">No, volver</a>
+</form>
+{% endblock %}

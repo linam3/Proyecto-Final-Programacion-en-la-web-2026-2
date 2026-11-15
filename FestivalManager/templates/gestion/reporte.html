@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block titulo %}Reporte · {{ evento.nombre }} · {{ sitio.nombre }}{% endblock %}
+
+{% block contenido %}
+<p class="migas">
+  {% if user.rol == "admin" %}<a href="{% url 'evento:gestion' %}">Administración</a>{% else %}<a href="{% url 'evento:panel' %}">Panel</a>{% endif %}
+  &rsaquo; Reporte
+</p>
+<h2>Reporte de participación: {{ evento.nombre }}</h2>
+<p>{{ evento.get_estado_display }} · {{ evento.fecha_inicio|date:"j M" }} – {{ evento.fecha_fin|date:"j M Y" }}</p>
+<a class="btn btn-primario boton-nuevo" href="{% url 'evento:reporte_csv' evento.pk %}">Descargar detalle (CSV / Excel)</a>
+
+<table class="tabla">
+  <thead>
+    <tr><th>Actividad</th><th>Estado</th><th>Inscritos</th><th>Asistieron</th><th>No asistieron</th><th>Cancelaron</th><th>% asistencia</th><th>Puntos otorgados</th></tr>
+  </thead>
+  <tbody>
+    {% for f in filas %}
+      <tr>
+        <td>{{ f.actividad.nombre }}</td><td>{{ f.actividad.get_estado_display }}</td>
+        <td>{{ f.inscritos }}</td><td>{{ f.asistieron }}</td><td>{{ f.no_asistieron }}</td><td>{{ f.cancelaron }}</td>
+        <td>{{ f.porcentaje }}%</td><td>{{ f.puntos }}</td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="8">Este evento todavía no tiene actividades.</td></tr>
+    {% endfor %}
+  </tbody>
+  <tfoot>
+    <tr><th colspan="2">Total</th><th>{{ total.inscritos }}</th><th>{{ total.asistieron }}</th><th>{{ total.no_asistieron }}</th><th>{{ total.cancelaron }}</th><th>{{ total.porcentaje }}%</th><th>{{ total.puntos }}</th></tr>
+  </tfoot>
+</table>
+<p class="ayuda">En actividades canceladas los puntos aparecen en 0 porque no cuentan para nadie.</p>
+{% endblock %}
