@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block titulo %}{{ evento.nombre }} · UFEST{% endblock %}
+
+{% block tema %}
+<style>
+  :root { --azul: {{ evento.color_primario }}; --verde: {{ evento.color_acento }}; }
+</style>
+{% endblock %}
+
+{% block contenido %}
+<p class="migas"><a href="{% url 'evento:lista' %}">Eventos</a> &rsaquo; {{ evento.nombre }}</p>
+
+<section class="evento">
+  <div class="imagen-evento">
+    {% if evento.imagen %}
+      <img src="{{ evento.imagen.url }}" alt="{{ evento.nombre }}">
+    {% else %}
+      Imagen del evento
+    {% endif %}
+  </div>
+  <div class="info">
+    <h2>{{ evento.nombre }}</h2>
+    <p><strong>Fechas:</strong> {{ evento.fecha_inicio|date:"j M" }} – {{ evento.fecha_fin|date:"j M Y" }}</p>
+    <p><strong>Sede:</strong> {{ evento.sede }}</p>
+    <p>{{ evento.descripcion }}</p>
+    <div class="equivalencia">
+      <small>Puntos disponibles en este evento</small>
+      <span class="puntos">hasta {{ puntos_posibles }} puntos</span>
+    </div>
+  </div>
+</section>
+
+<h3>Actividades</h3>
+<form method="get" class="filtros">
+  <label>Categoría
+    <select name="categoria">
+      <option value="">Todas</option>
+      {% for c in categorias %}
+        <option value="{{ c.pk }}" {% if c.pk|stringformat:"s" == categoria_sel %}selected{% endif %}>{{ c.nombre }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>Estado
+    <select name="estado">
+      <option value="">Todos</option>
+      {% for valor, nombre in estados %}
+        <option value="{{ valor }}" {% if valor == estado_sel %}selected{% endif %}>{{ nombre }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <button type="submit" class="btn btn-secundario">Filtrar</button>
+</form>
+
+<table class="tabla">
+  <thead>
+    <tr><th>Actividad</th><th>Fecha</th><th>Lugar</th><th>Categoría</th><th>Cupo</th><th>Puntos</th></tr>
+  </thead>
+  <tbody>
+    {% for a in actividades %}
+      <tr>
+        <td><a href="{% url 'evento:actividad' a.pk %}">{{ a.nombre }}</a></td>
+        <td>{{ a.fecha_inicio|date:"j M, g:i a" }}</td>
+        <td>{{ a.lugar }}</td>
+        <td>{{ a.categoria|default:"—" }}</td>
+        <td>{{ a.cupo }}</td>
+        <td class="puntos">+{{ a.puntos }}</td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="6">No hay actividades con esos filtros.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

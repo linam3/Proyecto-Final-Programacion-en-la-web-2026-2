@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block titulo %}{{ actividad.nombre }} · UFEST{% endblock %}
+
+{% block tema %}
+<style>
+  :root { --azul: {{ actividad.evento.color_primario }}; --verde: {{ actividad.evento.color_acento }}; }
+</style>
+{% endblock %}
+
+{% block contenido %}
+<p class="migas">
+  <a href="{% url 'evento:lista' %}">Eventos</a> &rsaquo;
+  <a href="{% url 'evento:detalle' actividad.evento.pk %}">{{ actividad.evento.nombre }}</a> &rsaquo;
+  {{ actividad.nombre }}
+</p>
+
+<section class="evento">
+  <div class="imagen-evento">
+    {% if actividad.imagen %}
+      <img src="{{ actividad.imagen.url }}" alt="{{ actividad.nombre }}">
+    {% else %}
+      Imagen de la actividad
+    {% endif %}
+  </div>
+  <div class="info">
+    <a href="{% url 'evento:detalle' actividad.evento.pk %}" class="etiqueta-evento">
+      Actividad de: {{ actividad.evento.nombre }}
+    </a>
+    <h2>{{ actividad.nombre }}</h2>
+    <p><strong>Fecha:</strong> {{ actividad.fecha_inicio|date:"j M Y · g:i a" }}</p>
+    <p><strong>Lugar:</strong> {{ actividad.lugar }}</p>
+    <p><strong>Cupo:</strong> {{ actividad.inscritos }} / {{ actividad.cupo }} inscritos</p>
+    <p><strong>Categoría:</strong> {{ actividad.categoria|default:"Sin categoría" }}</p>
+    <div class="equivalencia">
+      <small>Equivalencia de la actividad</small>
+      <span class="puntos">+{{ actividad.puntos }} puntos</span>
+      <em>si asistes</em>
+    </div>
+    {# Paso 6: aquí van los botones de inscribirse / cancelar #}
+  </div>
+</section>
+
+<section class="descripcion">
+  <h3>Descripción</h3>
+  <p>{{ actividad.descripcion|linebreaks }}</p>
+</section>
+
+{% if otras %}
+<section class="otras">
+  <h3>Otras actividades de {{ actividad.evento.nombre }}</h3>
+  <ul class="lista-convenciones">
+    {% for o in otras %}
+      <li>
+        <a href="{% url 'evento:actividad' o.pk %}">{{ o.nombre }}</a>
+        <span>{{ o.categoria|default:"Sin categoría" }} · +{{ o.puntos }} puntos</span>
+      </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+<p class="nota">Nota: si te inscribes y no asistes, no se te otorgan los puntos de la actividad.</p>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block titulo %}Eventos · UFEST{% endblock %}
+
+{% block contenido %}
+<h2>Eventos</h2>
+<div class="tarjetas">
+  {% for evento in eventos %}
+    <a class="tarjeta" href="{% url 'evento:detalle' evento.pk %}"
+       style="--azul: {{ evento.color_primario }}; --verde: {{ evento.color_acento }};">
+      {% if evento.imagen %}
+        <img src="{{ evento.imagen.url }}" alt="{{ evento.nombre }}">
+      {% else %}
+        <div class="tarjeta-imagen">{{ evento.nombre }}</div>
+      {% endif %}
+      <div class="tarjeta-info">
+        <h3>{{ evento.nombre }}</h3>
+        <p>{{ evento.fecha_inicio|date:"j M" }} – {{ evento.fecha_fin|date:"j M Y" }} · {{ evento.sede }}</p>
+        <p class="tarjeta-detalle">
+          {{ evento.num_actividades }} actividades · hasta {{ evento.puntos_posibles|default:0 }} puntos
+        </p>
+      </div>
+    </a>
+  {% empty %}
+    <p>No hay eventos publicados por ahora.</p>
+  {% endfor %}
+</div>
+{% endblock %}
