@@ -21,7 +21,7 @@
   {{ actividad.inscritos }} / {{ actividad.cupo }} inscritos ·
   <span class="puntos">+{{ actividad.puntos }} puntos</span>
 </p>
-
+{% endif %}
 {% if actividad.estado == "cancelado" %}
   <p class="mensaje error">Esta actividad está cancelada. No se puede modificar la asistencia.</p>
 {% endif %}
@@ -58,7 +58,7 @@
     </tbody>
   </table>
 </section>
-
+  
 <section>
   <h3>Registro manual de asistentes</h3>
   <p class="ayuda">
@@ -90,7 +90,7 @@
     </table>
   {% endif %}
 </section>
-
+  
 <section>
   <h3>Cerrar asistencia</h3>
   <p class="ayuda">

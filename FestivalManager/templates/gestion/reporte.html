@@ -8,7 +8,7 @@
 </p>
 <h2>Reporte de participación: {{ evento.nombre }}</h2>
 <p>{{ evento.get_estado_display }} · {{ evento.fecha_inicio|date:"j M" }} – {{ evento.fecha_fin|date:"j M Y" }}</p>
-<a class="btn btn-primario boton-nuevo" href="{% url 'evento:reporte_csv' evento.pk %}">Descargar detalle (CSV / Excel)</a>
+
 
 <table class="tabla">
   <thead>

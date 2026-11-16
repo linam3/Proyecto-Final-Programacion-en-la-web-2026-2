@@ -38,35 +38,36 @@
     </div>
 
     <div class="acciones">
-        {% if participacion.estado == "asistio" %}
-          <p class="mensaje success">Asistencia registrada · +{{ participacion.puntos_otorgados }} puntos</p>
-          <a class="btn btn-primario" href="{% url 'evento:entrada' actividad.pk %}">Ver mi entrada</a>
-        {% elif participacion.estado == "no_asistio" %}
-          <p class="ayuda">Quedaste registrado como «No asistió» en esta actividad.</p>
-        {% else %}
-          <a class="btn btn-primario" href="{% url 'evento:entrada' actividad.pk %}">Ver mi entrada</a>
-          <form method="post" action="{% url 'evento:cancelar' actividad.pk %}">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-secundario">Cancelar inscripción</button>
-          </form>
-        {% endif %}
-      {% elif user.is_authenticated and not user.es_participante %}
-        <p class="ayuda">Los coordinadores y administradores no se inscriben en actividades.</p>
-      {% elif not actividad.inscripciones_abiertas %}
-        <p class="ayuda">Las inscripciones para esta actividad están cerradas.</p>
-      {% elif actividad.inscritos >= actividad.cupo %}
-        <p class="ayuda">Esta actividad ya no tiene cupos disponibles.</p>
-      {% elif not user.is_authenticated %}
-        <a class="btn btn-primario" href="{% url 'login' %}?next={{ request.path }}">Inicia sesión para inscribirte</a>
-      {% elif not user.verificado %}
-        <p class="ayuda">Tu cuenta está pendiente de verificación por un administrador. Cuando la verifiquen podrás inscribirte.</p>
-      {% else %}
-        <form method="post" action="{% url 'evento:inscribirse' actividad.pk %}">
-          {% csrf_token %}
-          <button type="submit" class="btn btn-primario">Inscribirme</button>
-        </form>
-      {% endif %}
-    </div>
+  {% if participacion %}
+    {% if participacion.estado == "asistio" %}
+      <p class="mensaje success">Asistencia registrada · +{{ participacion.puntos_otorgados }} puntos</p>
+      <a class="btn btn-primario" href="{% url 'evento:entrada' actividad.pk %}">Ver mi entrada</a>
+    {% elif participacion.estado == "no_asistio" %}
+      <p class="ayuda">Quedaste registrado como «No asistió» en esta actividad.</p>
+    {% else %}
+      <a class="btn btn-primario" href="{% url 'evento:entrada' actividad.pk %}">Ver mi entrada</a>
+      <form method="post" action="{% url 'evento:cancelar' actividad.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-secundario">Cancelar inscripción</button>
+      </form>
+    {% endif %}
+  {% elif user.is_authenticated and not user.es_participante %}
+    <p class="ayuda">Los coordinadores y administradores no se inscriben en actividades.</p>
+  {% elif not actividad.inscripciones_abiertas %}
+    <p class="ayuda">Las inscripciones para esta actividad están cerradas.</p>
+  {% elif actividad.inscritos >= actividad.cupo %}
+    <p class="ayuda">Esta actividad ya no tiene cupos disponibles.</p>
+  {% elif not user.is_authenticated %}
+    <a class="btn btn-primario" href="{% url 'login' %}?next={{ request.path }}">Inicia sesión para inscribirte</a>
+  {% elif not user.verificado %}
+    <p class="ayuda">Tu cuenta está pendiente de verificación por un administrador. Cuando la verifiquen podrás inscribirte.</p>
+  {% else %}
+    <form method="post" action="{% url 'evento:inscribirse' actividad.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-primario">Inscribirme</button>
+    </form>
+  {% endif %}
+</div>
   </div>
 </section>
 
