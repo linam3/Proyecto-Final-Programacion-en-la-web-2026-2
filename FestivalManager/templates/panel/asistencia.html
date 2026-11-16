@@ -16,8 +16,7 @@
 
 <h2>Asistencia: {{ actividad.nombre }}</h2>
 {% if actividad.estado != "cancelado" %}
-  <a class="btn btn-primario boton-nuevo" href="{% url 'evento:qr' actividad.pk %}">Ver / descargar QR de la actividad</a>{% endif %}
-<p>
+  <a class="btn btn-primario boton-nuevo" href="{% url 'evento:escanear' actividad.pk %}">Escanear entradas (QR)</a><p>
   {{ actividad.fecha_inicio|date:"j M Y · g:i a" }} · {{ actividad.lugar }} ·
   {{ actividad.inscritos }} / {{ actividad.cupo }} inscritos ·
   <span class="puntos">+{{ actividad.puntos }} puntos</span>

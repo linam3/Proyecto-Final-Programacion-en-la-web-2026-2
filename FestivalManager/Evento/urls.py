@@ -10,7 +10,7 @@ urlpatterns = [
     path("actividades/<int:pk>/", views.detalle_actividad, name="actividad"),
     path("actividades/<int:pk>/inscribirse", views.inscribirse, name="inscribirse"),
     path("actividades/<int:pk>/cancelar", views.cancelar, name="cancelar"),
-    path("asistir/<uuid:token>/", views.asistir, name="asistir"),  # destino del QR
+    path("actividades/<int:pk>/entrada/", views.mi_entrada, name="entrada"),
 
     # Panel de coordinadores / administrador
     path("panel/", views.panel, name="panel"),
@@ -18,8 +18,8 @@ urlpatterns = [
     path("panel/actividades/<int:pk>/asistencia/<int:participacion_id>/", views.marcar_asistencia_vista, name="marcar"),
     path("panel/actividades/<int:pk>/asistentes/agregar/", views.agregar_asistente, name="agregar_asistente"),
     path("panel/actividades/<int:pk>/asistencia/cerrar/", views.cerrar_asistencia_vista, name="cerrar_asistencia"),
-    path("panel/actividades/<int:pk>/qr/", views.qr_actividad, name="qr"),
-    path("panel/actividades/<int:pk>/qr/descargar/", views.qr_actividad_descargar, name="qr_descargar"),
+    path("panel/actividades/<int:pk>/escanear/", views.escanear, name="escanear"),
+    path("panel/actividades/<int:pk>/escanear/registrar/", views.registrar_qr, name="registrar_qr"),
     path("panel/actividades/<int:pk>/iniciar/", views.iniciar_actividad, name="iniciar_actividad"),
     path("panel/actividades/<int:pk>/finalizar/", views.finalizar_actividad, name="finalizar_actividad"),
     path("panel/eventos/<int:pk>/actividades/nueva/", views.crear_actividad, name="crear_actividad"),

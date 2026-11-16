@@ -38,13 +38,13 @@
     </div>
 
     <div class="acciones">
-      {% if participacion %}
         {% if participacion.estado == "asistio" %}
           <p class="mensaje success">Asistencia registrada · +{{ participacion.puntos_otorgados }} puntos</p>
+          <a class="btn btn-primario" href="{% url 'evento:entrada' actividad.pk %}">Ver mi entrada</a>
         {% elif participacion.estado == "no_asistio" %}
           <p class="ayuda">Quedaste registrado como «No asistió» en esta actividad.</p>
         {% else %}
-          <p class="ayuda">Estás inscrito. Cuando la actividad comience, escanea el código QR que habrá en el lugar para registrar tu asistencia y ganar tus puntos.</p>
+          <a class="btn btn-primario" href="{% url 'evento:entrada' actividad.pk %}">Ver mi entrada</a>
           <form method="post" action="{% url 'evento:cancelar' actividad.pk %}">
             {% csrf_token %}
             <button type="submit" class="btn btn-secundario">Cancelar inscripción</button>

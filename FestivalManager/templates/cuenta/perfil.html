@@ -25,7 +25,7 @@
   <h4>{{ grupo.grouper.nombre }}{% if grupo.grouper.estado == "cancelado" %} <small>· Evento cancelado</small>{% endif %}</h4>
   <table class="tabla">
     <thead>
-      <tr><th>Actividad</th><th>Fecha</th><th>Estado</th><th>Puntos</th></tr>
+      <tr><th>Actividad</th><th>Fecha</th><th>Estado</th><th>Puntos</th><th>Entrada</th></tr>
     </thead>
     <tbody>
       {% for p in grupo.list %}
@@ -35,11 +35,19 @@
             <td>{{ p.actividad.fecha_inicio|date:"j M Y, g:i a" }}</td>
             <td>Actividad cancelada</td>
             <td>0</td>
+            <td>—</td>
           {% else %}
             <td><a href="{% url 'evento:actividad' p.actividad.pk %}">{{ p.actividad.nombre }}</a></td>
             <td>{{ p.actividad.fecha_inicio|date:"j M Y, g:i a" }}</td>
             <td>{{ p.get_estado_display }}</td>
             <td>{{ p.puntos_otorgados }}</td>
+            <td>
+              {% if p.estado == "inscrito" or p.estado == "asistio" %}
+                <a href="{% url 'evento:entrada' p.actividad.pk %}">Ver entrada</a>
+              {% else %}
+                —
+              {% endif %}
+            </td>
           {% endif %}
         </tr>
       {% endfor %}

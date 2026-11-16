@@ -1,6 +1,7 @@
 import csv
 import datetime as dt
 import io
+import uuid
 
 import qrcode
 import qrcode.image.svg
@@ -8,7 +9,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.db.models import Count, Q, Sum
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.text import slugify
@@ -168,52 +169,30 @@ def cancelar(request, pk):
     messages.success(request, "Inscripción cancelada")
     return redirect("evento:actividad", pk=pk)
 
-
 @login_required
-def asistir(request, token):
-    """GET: muestra confirmación. POST: registra la asistencia (muta estado)."""
-    actividad = get_object_or_404(Actividad.objects.select_related("evento"), token_qr=token)
+def mi_entrada(request, pk):
+    participacion = get_object_or_404(
+        Participacion.objects.select_related("actividad__evento"),
+        actividad_id=pk,
+        usuario=request.user,
+        estado__in=[Participacion.Estado.INSCRITO, Participacion.Estado.ASISTIO],
+        # Si la actividad o el evento se cancelan, la entrada deja de existir
+        actividad__estado__in=VISIBLES,
+        actividad__evento__estado__in=VISIBLES,
+    )
 
-    # ---------- SALIDA 1: GET ----------
-    # Va JUSTO AQUÍ, antes de la lógica de registro.
-    if request.method == "GET":
-        return render(request, "evento/asistir.html", {
-            "actividad": actividad,
-            "resultado": None,
-            "confirmar": True,
-        })
+    # El QR solo contiene el token: aleatorio e imposible de adivinar
+    imagen = qrcode.make(str(participacion.token), image_factory=qrcode.image.svg.SvgPathImage)
+    memoria = io.BytesIO()
+    imagen.save(memoria)
+    svg = memoria.getvalue().decode("utf-8")
+    svg = svg[svg.find("<svg"):]  # quita la cabecera <?xml ...?>
 
-    # ---------- Lógica de registro (solo POST) ----------
-    resultado = {"tipo": "error", "mensaje": ""}
-
-    if not request.user.es_participante:
-        resultado["mensaje"] = "Solo los participantes registran su asistencia escaneando el código."
-    elif actividad.estado == Actividad.Estado.CANCELADO or actividad.evento.estado == Evento.Estado.CANCELADO:
-        resultado["mensaje"] = "Esta actividad fue cancelada: no se registra asistencia ni se otorgan puntos."
-    elif actividad.estado == Actividad.Estado.FINALIZADO:
-        resultado["mensaje"] = "Esta actividad ya terminó. Ya no se puede registrar asistencia."
-    elif actividad.estado != Actividad.Estado.EN_CURSO:
-        resultado["mensaje"] = "Esta actividad todavía no ha comenzado. Vuelve a escanear cuando inicie."
-    else:
-        participacion = (
-            actividad.participaciones.filter(usuario=request.user)
-            .exclude(estado=Participacion.Estado.CANCELADO).first()
-        )
-        if participacion is None:
-            resultado["mensaje"] = "No estás inscrito en esta actividad. Inscríbete antes de escanear."
-        elif participacion.marcar_asistencia(True, metodo=Participacion.Metodo.QR):
-            resultado = {"tipo": "success", "mensaje": f"¡Asistencia registrada! Ganaste +{participacion.puntos_otorgados} puntos."}
-        else:
-            resultado = {"tipo": "info", "mensaje": "Tu asistencia ya estaba registrada."}
-
-    # ---------- SALIDA 2: POST (final de la vista) ----------
-    # Este SUSTITUYE al return render(...) original que había al final.
-    return render(request, "evento/asistir.html", {
-        "actividad": actividad,
-        "resultado": resultado,
-        "confirmar": False,
+    return render(request, "evento/mi_entrada.html", {
+        "participacion": participacion,
+        "actividad": participacion.actividad,
+        "qr_svg": svg,
     })
-
 
 # ===== Panel de coordinadores y administrador =====
 
@@ -384,7 +363,7 @@ def cancelar_actividad(request, pk):
 def iniciar_actividad(request, pk):
     actividad = _actividad_del_panel(request, pk)
     if actividad.iniciar():
-        messages.success(request, f"«{actividad.nombre}» está en curso: ya se puede escanear el QR.")
+        messages.success(request, f"«{actividad.nombre}» está en curso: ya puedes registrar la asistencia.")
     else:
         messages.error(request, "Solo se puede iniciar una actividad publicada, de un evento publicado o en curso.")
     return redirect("evento:panel")
@@ -434,33 +413,40 @@ def apariencia_evento(request, pk):
     return render(request, "panel/apariencia.html", {"form": form, "evento": evento})
 
 
-# ===== QR de la actividad (solo administrador y coordinadores del evento) =====
+# ===== Escaneo de entradas QR (administrador y coordinadores del evento) =====
 
-def _url_asistencia(request, actividad):
-    return request.build_absolute_uri(reverse("evento:asistir", args=[actividad.token_qr]))
+@login_required
+def escanear(request, pk):
+    actividad = _actividad_del_panel(request, pk)
+    return render(request, "panel/escanear.html", {"actividad": actividad})
 
 
 @login_required
-def qr_actividad(request, pk):
+@require_POST
+def registrar_qr(request, pk):
     actividad = _actividad_del_panel(request, pk)
-    url = _url_asistencia(request, actividad)
-    imagen = qrcode.make(url, image_factory=qrcode.image.svg.SvgPathImage)
-    memoria = io.BytesIO()
-    imagen.save(memoria)
-    svg = memoria.getvalue().decode("utf-8")
-    svg = svg[svg.find("<svg"):]  # quita la cabecera <?xml ...?>
-    return render(request, "panel/qr.html", {"actividad": actividad, "qr_svg": svg, "url": url})
+    if actividad.estado == Actividad.Estado.CANCELADO or actividad.evento.estado == Evento.Estado.CANCELADO:
+        return JsonResponse({"ok": False, "mensaje": "La actividad está cancelada."})
 
+    token = request.POST.get("token", "").strip()
+    try:
+        uuid.UUID(token)
+    except ValueError:
+        return JsonResponse({"ok": False, "mensaje": "Ese código no es una entrada de UFEST."})
 
-@login_required
-def qr_actividad_descargar(request, pk):
-    actividad = _actividad_del_panel(request, pk)
-    imagen = qrcode.make(_url_asistencia(request, actividad), box_size=12, border=4)
-    memoria = io.BytesIO()
-    imagen.save(memoria, format="PNG")
-    respuesta = HttpResponse(memoria.getvalue(), content_type="image/png")
-    respuesta["Content-Disposition"] = f'attachment; filename="qr-{slugify(actividad.nombre)[:40] or actividad.pk}.png"'
-    return respuesta
+    participacion = actividad.participaciones.select_related("usuario").filter(token=token).first()
+    if participacion is None:
+        return JsonResponse({"ok": False, "mensaje": "Esta entrada no corresponde a esta actividad."})
+    if participacion.estado == Participacion.Estado.CANCELADO:
+        return JsonResponse({"ok": False, "mensaje": "Esta inscripción fue cancelada."})
+
+    nombre = participacion.usuario.get_full_name() or participacion.usuario.username
+    if not participacion.marcar_asistencia(True, metodo=Participacion.Metodo.QR):
+        return JsonResponse({"ok": True, "repetido": True, "mensaje": f"{nombre} ya tenía la asistencia registrada."})
+    return JsonResponse({
+        "ok": True,
+        "mensaje": f"Asistencia registrada: {nombre} (+{participacion.puntos_otorgados} puntos).",
+    })
 
 
 # ===== Panel del administrador general =====

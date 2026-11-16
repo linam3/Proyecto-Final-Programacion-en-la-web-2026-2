@@ -38,8 +38,7 @@
             <td class="acciones-panel">
               <a href="{% url 'evento:asistencia' a.pk %}">Asistencia</a>
               {% if a.estado != "cancelado" %}
-                <a href="{% url 'evento:qr' a.pk %}">QR</a>
-                {% if a.estado == "publicado" and evento.estado == "publicado" or a.estado == "publicado" and evento.estado == "en_curso" %}
+                <a href="{% url 'evento:escanear' a.pk %}">Escanear</a>                {% if a.estado == "publicado" and evento.estado == "publicado" or a.estado == "publicado" and evento.estado == "en_curso" %}
                   <form method="post" action="{% url 'evento:iniciar_actividad' a.pk %}">{% csrf_token %}<button type="submit" class="enlace-peligro">Iniciar</button></form>
                 {% endif %}
                 {% if a.estado == "publicado" or a.estado == "en_curso" %}
