@@ -13,7 +13,7 @@ def registro(request):
     form = RegistroForm(request.POST or None)
     if form.is_valid():
         usuario = form.save()
-        login(request, usuario)
+        login(request, usuario, backend="django.contrib.auth.backends.ModelBackend")
         messages.info(request, "Cuenta creada. Un administrador verificará tus datos para que puedas inscribirte.")
         return redirect(settings.LOGIN_REDIRECT_URL)
     return render(request, "cuenta/registro.html", {"form": form})

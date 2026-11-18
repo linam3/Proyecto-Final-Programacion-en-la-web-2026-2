@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 import os
 from pathlib import Path
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -41,7 +42,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'Evento.apps.EventoConfig',
-    'Cuenta.apps.CuentaConfig'
+    'Cuenta.apps.CuentaConfig',
+    "axes"
 ]
 
 MIDDLEWARE = [
@@ -53,6 +55,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'Evento.middleware.SincronizarEstadosMiddleware',
+    "axes.middleware.AxesMiddleware"
+
 ]
 
 ROOT_URLCONF = 'FestivalManager.urls'
@@ -134,3 +138,13 @@ LOGOUT_REDIRECT_URL = "evento:lista"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+AUTHENTICATION_BACKENDS = [
+    "axes.backends.AxesStandaloneBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
+
+AXES_FAILURE_LIMIT = 5                       # intentos fallidos permitidos
+AXES_COOLOFF_TIME = timedelta(minutes=15)    # tiempo de bloqueo
+AXES_RESET_ON_SUCCESS = True                 # un login correcto reinicia el contador
+AXES_LOCKOUT_PARAMETERS = ["ip_address", "username"]  # bloquea por IP y por usuario

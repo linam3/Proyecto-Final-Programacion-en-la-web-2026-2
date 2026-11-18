@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import AuthenticationForm
 from .models import Usuario
 
 
@@ -34,3 +35,9 @@ class PerfilForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["email"].required = True
+
+class LoginForm(AuthenticationForm):
+    error_messages = {
+        "invalid_login": "Usuario o contraseña incorrectos.",
+        "inactive": "Usuario o contraseña incorrectos.",
+    }
