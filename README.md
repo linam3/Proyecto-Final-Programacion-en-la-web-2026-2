@@ -5,3 +5,5 @@ En la rama main se consolida el proyecto. Se agrega el rol de administrador gene
 La asistencia se toma mediante QR. Cada participante inscrito tiene su propia entrada con un código QR, que puede ver desde la actividad o desde su perfil, y el coordinador o el administrador la escanea con la cámara (o escribe el código a mano) para registrar la asistencia y otorgar los puntos. Quien no es escaneado queda como «No asistió». Si un evento se cancela, sus actividades se cancelan, no se puede inscribir nadie, las entradas dejan de funcionar y los puntos de ese evento dejan de contar, aunque el evento permanece en el historial de cada usuario.
 
 Los participantes se registran con nombres, apellidos, correo y teléfono. Un administrador verifica sus datos antes de que puedan inscribirse, y ellos solo pueden editar su correo, su teléfono y su contraseña. También se agregan filtros por fecha en la lista de eventos y en sus actividades, y reportes de participación descargables en CSV.
+
+Como ultimo, se hizo una pequeña corrección, para arreglar un problema de seguridad de la contraseña.
